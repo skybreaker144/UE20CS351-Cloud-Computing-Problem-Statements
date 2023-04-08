@@ -99,10 +99,15 @@ func (this *RaftNode) startElection() {
 				// You probably need to have implemented becomeFollower before this.
 
 				//-------------------------------------------------------------------------------------------/
-				if reply.Term > {
+				if reply.Term > //this.term{
 					// TODO
-				} else if reply.Term ==  {
+					//Increment the term to the current term
+					//call become follower
+				} else if reply.Term ==  //this.term{
 					// TODO
+					// check if the vote is te=rue first then increment.
+					// Increment the votes recieved variable
+					// If the votes recieved variable is greater than half the number of nodes then change the state to Leader.
 				}
 				//-------------------------------------------------------------------------------------------/
 
@@ -121,5 +126,8 @@ func (this *RaftNode) becomeFollower(term int) {
 	// IMPLEMENT becomeFollower; do you need to start a goroutine here, maybe?
 	//-------------------------------------------------------------------------------------------/
 	// TODO
+	// start a go routine
+	// Change the state to follower.
+	// refresh the index
 	//-------------------------------------------------------------------------------------------/
 }
