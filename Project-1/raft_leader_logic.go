@@ -111,6 +111,16 @@ func (this *RaftNode) broadcastHeartbeats() {
 						// IMPLEMENT THE UPDATE LOGIC FOR THIS.
 						//-------------------------------------------------------------------------------------------/
 						// TODO
+						    numEntriesReplicated := len(entries)
+
+    						// Update nextIndex and matchIndex
+    						this.nextIndex[peerId] = currentPeer_nextIndex + numEntriesReplicated
+    						this.matchIndex[peerId] = this.nextIndex[peerId] - 1
+
+    						// Log the change
+    						if LogReplicationUpdates {
+        						this.write_log("Peer %d: updated nextIndex: %d, matchIndex: %d", peerId, this.nextIndex[peerId], this.matchIndex[peerId])
+						}
 						//-------------------------------------------------------------------------------------------/
 
 						if (aeType == "Heartbeat" && LogHeartbeatMessages) || aeType == "AppendEntries" {
@@ -127,16 +137,24 @@ func (this *RaftNode) broadcastHeartbeats() {
 						for i := this.commitIndex + 1; i < len(this.log); i++ {
 							if this.log[i].Term == this.currentTerm {
 								matchCount := 1 // Leader itself
-
+								var matchFrom int
+								
 								for _, peerId := range this.peersIds {
-									if { // TODO  // When should you update matchCount?
-										matchCount++
-									}
+									if this.matchIndex[peerId] >= i {
+                								matchCount++
+
+                								// Track which peer contributed to the match
+                								matchFrom = peerId
+           								}
 								}
 
-								if { // TODO  // When should you update commitIndex to i?
-									this.commitIndex = i
-								}
+								if matchCount > len(this.peersIds)/2 {
+								    // Update commitIndex
+								    this.commitIndex = i
+
+								    if LogCommitUpdates {
+									this.write_log("Node %d: commitIndex updated to %d from match on %d", this.id, this.commitIndex, matchFrom)
+								    }
 							}
 						}
 						//-------------------------------------------------------------------------------------------/
@@ -155,6 +173,7 @@ func (this *RaftNode) broadcastHeartbeats() {
 
 						//-------------------------------------------------------------------------------------------/
 						// TODO
+						this.nextIndex[peerId]--;
 						//-------------------------------------------------------------------------------------------/
 
 						if (aeType == "Heartbeat" && LogHeartbeatMessages) || aeType == "AppendEntries" {
