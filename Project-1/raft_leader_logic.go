@@ -103,7 +103,11 @@ func (this *RaftNode) broadcastHeartbeats() {
 
 						// There's changes you need to make here.
 						// this.nextIndex for the received PEER (this.nextIndex[peerId]) needs to be updated.
+						
+						// Should this.nextIndex[peerId] be incremented??
 						// So does this.matchIndex[peerId].
+						
+						// Whatt does matchIndex[peerId] supposed to even do?
 						// IMPLEMENT THE UPDATE LOGIC FOR THIS.
 						//-------------------------------------------------------------------------------------------/
 						// TODO
