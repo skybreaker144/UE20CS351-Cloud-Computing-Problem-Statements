@@ -99,17 +99,59 @@ func (this *RaftNode) startElection() {
 				// You probably need to have implemented becomeFollower before this.
 
 				//-------------------------------------------------------------------------------------------/
-				if reply.Term > //this.term{
+				//if reply.Term > //this.term{
 					// TODO
 					//Increment the term to the current term
 					//call become follower
-				} else if reply.Term ==  //this.term{
+				if reply.Term > this.currentTerm {
+					this.currentTerm = reply.Term
+					this.becomeFollower(reply.Term)
+					this.state = "Follower"
+					this.votedFor = -1
+					this.write_log("received a RequestVote reply from %d with higher term=%d; became Follower", peerId, reply.Term)
+					return
+					}
+				} else if reply.Term == termWhenVoteRequested{
 					// TODO
+					if reply.VoteGranted {
+						votesReceived += 1
+						this.write_log("received a positive vote from %d (total: %d)", peerId, votesReceived)
+						if votesReceived > len(this.peersIds)/2 {
+							this.write_log("got majority votes: %d; became Leader", votesReceived)
+							this.startLeader()
+						}
+						return
+					}
+				 	} else {
+						this.write_log("received a negative vote from %d", peerId)
+					}
+					} else {
+						this.write_log("received a RequestVote reply from %d with lower term=%d", peerId, reply.Term)
+					}
+		
+							// if node has become a leader
+					if this.state != "Candidate" && this.state != "Follower" {
+					return
+					}
+
+					// if node received requestVote or appendEntries of a higher term and updated itself
+					if termStarted != this.currentTerm {
+					return
+					}
+
+					// Start an election if we haven't heard from a leader or haven't voted for someone for the duration of the timeout.
+					if elapsed := time.Since(this.lastElectionTimerStartedTime); elapsed >= timeoutDuration {
+					this.startElection()
+					return
+					}
+
+					this.mu.Unlock()
+				}
 					// check if the vote is te=rue first then increment.
 					// Increment the votes recieved variable
 					// If the votes recieved variable is greater than half the number of nodes then change the state to Leader.
 					// call startLeader()
-				}
+				
 				//-------------------------------------------------------------------------------------------/
 
 			}
@@ -130,5 +172,14 @@ func (this *RaftNode) becomeFollower(term int) {
 	// start a go routine
 	// Change the state to follower.
 	// refresh the index
+	this.state = "Follower"
+	this.currentTerm = term
+	this.votedFor = -1
+	this.lastElectionTimerStartedTime = time.Now()
+
+	// Run an election timer as a follower
+	go this.startElectionTimer()
 	//-------------------------------------------------------------------------------------------/
 }
+
+
