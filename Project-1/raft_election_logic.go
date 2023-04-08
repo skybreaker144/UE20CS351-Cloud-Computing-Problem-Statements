@@ -108,6 +108,7 @@ func (this *RaftNode) startElection() {
 					// check if the vote is te=rue first then increment.
 					// Increment the votes recieved variable
 					// If the votes recieved variable is greater than half the number of nodes then change the state to Leader.
+					// call startLeader()
 				}
 				//-------------------------------------------------------------------------------------------/
 
